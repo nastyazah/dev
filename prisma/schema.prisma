@@ -1,0 +1,187 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  JURY
+  TEAM
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      Role     @default(TEAM)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions     Session[]
+  captainOf    Team[]           @relation("TeamCaptain")
+  tournaments  Tournament[]     @relation("TournamentAdmin")
+  juryScores   JuryAssignment[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+enum TournamentStatus {
+  DRAFT
+  REGISTRATION
+  RUNNING
+  FINISHED
+}
+
+model Tournament {
+  id          String           @id @default(cuid())
+  title       String
+  description String
+  status      TournamentStatus @default(DRAFT)
+  regStart    DateTime
+  regEnd      DateTime
+  maxTeams    Int?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  adminId String
+  admin   User   @relation("TournamentAdmin", fields: [adminId], references: [id])
+
+  teams Team[]
+  tasks Task[]
+
+  @@map("tournaments")
+}
+
+enum TeamStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model Team {
+  id        String     @id @default(cuid())
+  name      String
+  city      String?
+  contact   String?
+  status    TeamStatus @default(PENDING)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  captainId    String
+  captain      User       @relation("TeamCaptain", fields: [captainId], references: [id])
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  members     TeamMember[]
+  submissions Submission[]
+
+  @@unique([captainId, tournamentId])
+  @@map("teams")
+}
+
+model TeamMember {
+  id     String @id @default(cuid())
+  name   String
+  email  String
+
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
+  @@unique([email, teamId])
+  @@map("team_members")
+}
+
+enum TaskStatus {
+  DRAFT
+  ACTIVE
+  SUBMISSION_CLOSED
+  EVALUATED
+}
+
+model Task {
+  id           String     @id @default(cuid())
+  title        String
+  description  String
+  requirements String[]
+  techStack    String?
+  startAt      DateTime
+  deadline     DateTime
+  status       TaskStatus @default(DRAFT)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  submissions Submission[]
+
+  @@map("tasks")
+}
+
+model Submission {
+  id          String   @id @default(cuid())
+  githubUrl   String
+  videoUrl    String
+  demoUrl     String?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  taskId String
+  task   Task   @relation(fields: [taskId], references: [id])
+  teamId String
+  team   Team   @relation(fields: [teamId], references: [id])
+
+  assignments JuryAssignment[]
+
+  @@unique([taskId, teamId])
+  @@map("submissions")
+}
+
+model JuryAssignment {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  submissionId String
+  submission   Submission @relation(fields: [submissionId], references: [id])
+  juryId       String
+  jury         User       @relation(fields: [juryId], references: [id])
+
+  score Score?
+
+  @@unique([submissionId, juryId])
+  @@map("jury_assignments")
+}
+
+model Score {
+  id              String   @id @default(cuid())
+  backendQuality  Int
+  databaseQuality Int
+  frontendQuality Int
+  functionality   Int
+  stability       Int
+  usability       Int
+  total           Float
+  comment         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  assignmentId String         @unique
+  assignment   JuryAssignment @relation(fields: [assignmentId], references: [id])
+
+  @@map("scores")
+}

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="uk" class="h-full">
+<head>
+    <meta charset="utf-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Primary Meta Tags -->
+    <meta name="title" content="SFL Tournament 2026">
+    <meta name="description" content="Турнірна платформа Star for Life Ukraine 2026. Змагання з програмування для команд розробників.">
+    <meta name="keywords" content="програмування, турнір, IT, конкурс, розробка, Ukraine, SFL">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://tournament.sflua.org/">
+    <meta property="og:title" content="SFL Tournament 2026">
+    <meta property="og:description" content="Турнірна платформа Star for Life Ukraine 2026. Змагання з програмування для команд розробників.">
+    <meta property="og:image" content="%sveltekit.assets%/og-image.png">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://tournament.sflua.org/">
+    <meta property="twitter:title" content="SFL Tournament 2026">
+    <meta property="twitter:description" content="Турнірна платформа Star for Life Ukraine 2026. Змагання з програмування для команд розробників.">
+    <meta property="twitter:image" content="%sveltekit.assets%/og-image.png">
+
+    <!-- Theme color -->
+    <meta name="theme-color" content="#2563eb">
+    <meta name="msapplication-TileColor" content="#2563eb">
+
+    <!-- Apple -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="SFL Tournament">
+
+    <!-- Preload critical resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    %sveltekit.head%
+    <title>SFL Tournament 2026</title>
+</head>
+<body data-sveltekit-preload-data="hover" class="min-h-full bg-gray-50">
+<div style="display: contents">%sveltekit.body%</div>
+
+<!-- Service Worker Registration -->
+<script>
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/service-worker.js');
+    }
+</script>
+</body>
+</html>
