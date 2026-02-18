@@ -17,12 +17,14 @@ model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String
-  password  String
+  password  String?
+  emailVerified  Boolean  @default(false)
   role      Role     @default(TEAM)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   sessions     Session[]
+  accounts     Account[]
   captainOf    Team[]           @relation("TeamCaptain")
   tournaments  Tournament[]     @relation("TournamentAdmin")
   juryScores   JuryAssignment[]
@@ -30,10 +32,32 @@ model User {
   @@map("users")
 }
 
+model Account {
+  id                String    @id @default(cuid())
+  accountId         String
+  providerId        String
+  userId            String
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken       String?
+  refreshToken      String?
+  idToken           String?
+  expiresAt         DateTime?
+  password          String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@map("accounts")
+}
+
 model Session {
-  id        String   @id
+  id        String   @id @default(cuid())
   userId    String
+  token     String   @unique
   expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("sessions")

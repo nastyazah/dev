@@ -2,7 +2,16 @@
 declare global {
     namespace App {
         interface Locals {
-            user: import('better-auth').User | null;
+            user: {
+                id: string;
+                email: string;
+                name: string;
+                role: 'ADMIN' | 'JURY' | 'TEAM';
+                emailVerified: boolean;
+                createdAt: Date;
+                updatedAt: Date;
+                image?: string | null;
+            } | null;
             session: import('better-auth').Session | null;
         }
     }

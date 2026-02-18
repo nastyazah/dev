@@ -1,8 +1,57 @@
 {
-	"/": [],
+	"/": [
+		"src/routes/+layout.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/admin": [
+		"src/routes/admin/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
 	"/api/auth/[...all]": [
 		"src/routes/api/auth/[...all]/+server.ts"
 	],
-	"/auth/login": [],
-	"/auth/register": []
+	"/api/leaderboard": [
+		"src/routes/api/leaderboard/+server.ts"
+	],
+	"/api/scores": [
+		"src/routes/api/scores/+server.ts"
+	],
+	"/api/submissions": [
+		"src/routes/api/submissions/+server.ts"
+	],
+	"/api/tasks": [
+		"src/routes/api/tasks/+server.ts"
+	],
+	"/api/tasks/[id]": [
+		"src/routes/api/tasks/[id]/+server.ts"
+	],
+	"/api/teams": [
+		"src/routes/api/teams/+server.ts"
+	],
+	"/api/teams/[id]": [
+		"src/routes/api/teams/[id]/+server.ts"
+	],
+	"/api/tournaments": [
+		"src/routes/api/tournaments/+server.ts"
+	],
+	"/api/tournaments/[id]": [
+		"src/routes/api/tournaments/[id]/+server.ts"
+	],
+	"/auth/login": [
+		"src/routes/+layout.server.ts"
+	],
+	"/auth/register": [
+		"src/routes/+layout.server.ts"
+	],
+	"/jury": [
+		"src/routes/jury/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	],
+	"/jury/score/[id]": [
+		"src/routes/+layout.server.ts"
+	],
+	"/jury/[id]": [
+		"src/routes/jury/[id]/+page.server.ts",
+		"src/routes/+layout.server.ts"
+	]
 }
