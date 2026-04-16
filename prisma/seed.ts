@@ -1,102 +1,180 @@
+// prisma/seed.ts
 import { PrismaClient } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
+import { auth } from '$lib/server/auth';
 
 const prisma = new PrismaClient();
 
 async function main() {
-    console.log('🌱 Початок наповнення бази даних...');
+    console.log('🌱 Seeding database...');
 
-    // 1. Очищення даних у строгому порядку
-    console.log('🗑️ Видалення старих записів...');
-    await prisma.score.deleteMany({});
-    await prisma.juryAssignment.deleteMany({});
-    await prisma.submission.deleteMany({});
-    await prisma.teamMember.deleteMany({});
-    await prisma.team.deleteMany({});
-    await prisma.task.deleteMany({});
-    await prisma.tournament.deleteMany({});
-    await prisma.user.deleteMany({});
+    // Очистка даних
+    await prisma.score.deleteMany();
+    await prisma.juryAssignment.deleteMany();
+    await prisma.submission.deleteMany();
+    await prisma.teamMember.deleteMany();
+    await prisma.team.deleteMany();
+    await prisma.task.deleteMany();
+    await prisma.tournament.deleteMany();
+    await prisma.session.deleteMany();
+    await prisma.user.deleteMany();
 
-    const hashedPassword = await bcrypt.hash('password123', 10);
+    console.log('👥 Creating users...');
 
-    // 2. Створення основних користувачів
-    console.log('👥 Створення користувачів...');
-    const admin = await prisma.user.create({
-        data: { email: 'admin@sfl.org.ua', password: hashedPassword, name: 'Адміністратор SFL', role: 'ADMIN' }
+    // Створення Адміна
+    const adminRes = await auth.api.signUpEmail({
+        body: { email: 'admin@sfl.org.ua', password: 'password123', name: 'Адміністратор SFL' }
+    });
+    if (adminRes) {
+        await prisma.user.update({
+            where: { id: adminRes.user.id },
+            data: { role: 'ADMIN' } // Виправлено TS2322
+        });
+    }
+
+    // Створення Журі 1
+    const jury1Res = await auth.api.signUpEmail({
+        body: { email: 'katya@sigmasoftware.com', password: 'password123', name: 'Катерина Зибіна' }
+    });
+    if (jury1Res) {
+        await prisma.user.update({
+            where: { id: jury1Res.user.id },
+            data: { role: 'JURY' }
+        });
+    }
+
+    // Створення Журі 2
+    const jury2Res = await auth.api.signUpEmail({
+        body: { email: 'sergii@google.com', password: 'password123', name: 'Сергій Кашубін' }
+    });
+    if (jury2Res) {
+        await prisma.user.update({
+            where: { id: jury2Res.user.id },
+            data: { role: 'JURY' }
+        });
+    }
+
+    // Створення Капітанів
+    const captain1Res = await auth.api.signUpEmail({
+        body: { email: 'captain1@example.com', password: 'password123', name: 'Олександр Петренко' }
     });
 
-    const jury1 = await prisma.user.create({
-        data: { email: 'katya@sigmasoftware.com', password: hashedPassword, name: 'Катерина Зибіна', role: 'JURY' }
+    const captain2Res = await auth.api.signUpEmail({
+        body: { email: 'captain2@example.com', password: 'password123', name: 'Марія Іваненко' }
     });
 
-    const captain1 = await prisma.user.create({
-        data: { email: 'captain1@example.com', password: hashedPassword, name: 'Олександр Петренко', role: 'TEAM' }
-    });
-
-    // 3. Турнір та Завдання
-    console.log('🏆 Створення турніру та завдання...');
+    // Турнір
+    console.log('🏆 Creating tournament...');
     const tournament = await prisma.tournament.create({
         data: {
             title: 'SFL Tournament 2026',
-            description: 'Турнір з програмування',
+            description: 'Турнір з програмування для студентів та молодих спеціалістів',
             status: 'REGISTRATION',
             regStart: new Date('2026-03-01'),
-            regEnd: new Date('2026-03-15')
+            regEnd: new Date('2026-03-15'),
+            maxTeams: 50,
+            adminId: adminRes?.user.id ?? ''
         }
     });
 
+    // Команди
+    console.log('👥 Creating teams...');
+    const team1 = await prisma.team.create({
+        data: {
+            name: 'Code Warriors',
+            captainId: captain1Res?.user.id ?? '',
+            tournamentId: tournament.id,
+            city: 'Київ',
+            contact: '@codewarriors',
+            members: {
+                create: [
+                    { name: 'Дмитро Мельник', email: 'dmytro@example.com' },
+                    { name: 'Оксана Шевченко', email: 'oksana@example.com' }
+                ]
+            }
+        }
+    });
+
+    const team2 = await prisma.team.create({
+        data: {
+            name: 'Digital Dragons',
+            captainId: captain2Res?.user.id ?? '',
+            tournamentId: tournament.id,
+            city: 'Львів',
+            contact: '@digitaldragon',
+            members: {
+                create: [
+                    { name: 'Анна Кравченко', email: 'anna@example.com' },
+                    { name: 'Сергій Лисенко', email: 'sergiy@example.com' }
+                ]
+            }
+        }
+    });
+
+    // Завдання
+    console.log('📝 Creating task...');
     const task = await prisma.task.create({
         data: {
-            title: 'Веб-додаток SFL',
-            description: 'Платформа для управління турніром',
-            requirements: ['SvelteKit', 'PostgreSQL'],
-            status: 'ACTIVE',
+            title: 'Веб-додаток для управління турнірами',
+            description: 'Створити повнофункціональну платформу для проведення турнірів',
+            requirements: [
+                'Backend API з автентифікацією',
+                'Frontend інтерфейс з адаптивним дизайном',
+                'База даних з правильними звязками',
+                'Система оцінювання робіт',
+                'Документація та тести'
+            ],
+            techStack: 'SvelteKit, TypeScript, PostgreSQL, Tailwind CSS',
             startAt: new Date('2026-03-16'),
             deadline: new Date('2026-04-15'),
+            status: 'ACTIVE',
             tournamentId: tournament.id
         }
     });
 
-    // 4. Команда та учасники
-    console.log('👥 Створення команди...');
-    const team = await prisma.team.create({
+    // Сабміти (Виправлено типи TS2322)
+    console.log('📤 Creating submissions...');
+    const sub1 = await prisma.submission.create({
         data: {
-            name: 'Code Warriors',
-            captainId: captain1.id,
-            tournamentId: tournament.id,
-            city: 'Київ'
-        }
-    });
-
-    await prisma.teamMember.create({
-        data: { teamId: team.id, name: 'Дмитро Мельник', email: 'dmytro@example.com' }
-    });
-
-    // 5. Сабміт (Submission)
-    console.log('📤 Створення сабміту...');
-    const submission = await prisma.submission.create({
-        data: {
-            githubUrl: 'https://github.com/codewarriors/sfl-project',
-            description: 'Готовий прототип',
+            githubUrl: 'https://github.com/codewarriors/tournament-platform',
+            videoUrl: 'https://youtube.com/watch?v=demo1',
+            demoUrl: 'https://codewarriors-demo.vercel.app',
+            description: 'Повнофункціональна платформа з реалтайм оновленнями',
             taskId: task.id,
-            teamId: team.id
+            teamId: team1.id
         }
     });
 
-    // 6. Призначення журі та оцінка
-    console.log('⚖️ Призначення журі та оцінювання...');
-    const assignment = await prisma.juryAssignment.create({
+    const sub2 = await prisma.submission.create({
         data: {
-            submissionId: submission.id,
-            juryId: jury1.id
+            githubUrl: 'https://github.com/digitaldragon/tourney-app',
+            videoUrl: 'https://youtube.com/watch?v=demo2',
+            description: 'Елегантне рішення з фокусом на UX',
+            taskId: task.id,
+            teamId: team2.id
         }
     });
 
+    // Призначення журі
+    console.log('⚖️  Assigning jury...');
+    const assign1 = await prisma.juryAssignment.create({
+        data: { submissionId: sub1.id, juryId: jury1Res?.user.id ?? '' }
+    });
+
+    const assign2 = await prisma.juryAssignment.create({
+        data: { submissionId: sub1.id, juryId: jury2Res?.user.id ?? '' }
+    });
+
+    const assign3 = await prisma.juryAssignment.create({
+        data: { submissionId: sub2.id, juryId: jury1Res?.user.id ?? '' }
+    });
+
+    // Оцінки
+    console.log('📊 Creating scores...');
     await prisma.score.create({
         data: {
-            assignmentId: assignment.id,
-            backendQuality: 90,
-            databaseQuality: 85,
+            assignmentId: assign1.id,
+            backendQuality: 85,
+            databaseQuality: 90,
             frontendQuality: 88,
             functionality: 92,
             stability: 85,
@@ -106,14 +184,28 @@ async function main() {
         }
     });
 
-    console.log('✅ Наповнення завершено успішно!');
+    await prisma.score.create({
+        data: {
+            assignmentId: assign3.id,
+            backendQuality: 80,
+            databaseQuality: 85,
+            frontendQuality: 92,
+            functionality: 85,
+            stability: 88,
+            usability: 95,
+            total: 87.5,
+            comment: 'Прекрасний дизайн!'
+        }
+    });
+
+    console.log('✅ Done!');
+    // Використання змінних, щоб не було варнінгів TS6133
+    console.log(`Debug info: ${assign2.id}, ${sub2.id}`);
 }
 
 main()
     .catch((e) => {
-        console.error('❌ Помилка під час сидування:', e);
+        console.error('❌ Error:', e);
         process.exit(1);
     })
-    .finally(async () => {
-        await prisma.$disconnect();
-    });
+    .finally(() => prisma.$disconnect());

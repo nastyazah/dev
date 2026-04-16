@@ -1,10 +1,14 @@
 {
 	"/": [
+		"src/routes/+page.server.ts",
+		"src/routes/+layout.js",
 		"src/routes/+layout.server.ts",
+		"src/routes/+layout.js",
 		"src/routes/+layout.server.ts"
 	],
 	"/admin": [
 		"src/routes/admin/+page.server.ts",
+		"src/routes/+layout.js",
 		"src/routes/+layout.server.ts"
 	],
 	"/api/auth/[...all]": [
@@ -38,20 +42,49 @@
 		"src/routes/api/tournaments/[id]/+server.ts"
 	],
 	"/auth/login": [
+		"src/routes/+layout.js",
 		"src/routes/+layout.server.ts"
 	],
 	"/auth/register": [
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
+	],
+	"/courses": [
+		"src/routes/+layout.js",
 		"src/routes/+layout.server.ts"
 	],
 	"/jury": [
 		"src/routes/jury/+page.server.ts",
+		"src/routes/+layout.js",
 		"src/routes/+layout.server.ts"
 	],
 	"/jury/score/[id]": [
+		"src/routes/+layout.js",
 		"src/routes/+layout.server.ts"
 	],
 	"/jury/[id]": [
 		"src/routes/jury/[id]/+page.server.ts",
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
+	],
+	"/leaderboard": [
+		"src/routes/leaderboard/+page.server.ts",
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
+	],
+	"/profile": [
+		"src/routes/profile/+page.server.ts",
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
+	],
+	"/tourments/[id]": [
+		"src/routes/tourments/[id]/+page.server.ts",
+		"src/routes/+layout.js",
+		"src/routes/+layout.server.ts"
+	],
+	"/tourments/[id]/register": [
+		"src/routes/tourments/[id]/register/+page.server.ts",
+		"src/routes/+layout.js",
 		"src/routes/+layout.server.ts"
 	]
 }

@@ -1,18 +1,23 @@
-<!-- src/routes/jury/score/[id]/+page.svelte -->
 <script lang="ts">
-    import type { PageData } from './$types';
+    import type { JuryAssignment, Score, Submission, Team, Task } from '@prisma/client';
 
-    let { data }: { data: PageData } = $props();
+    type Assignment = JuryAssignment & {
+        score: Score | null;
+        submission: Submission & {
+            team: Pick<Team, 'id' | 'name'>;
+            task: Pick<Task, 'id' | 'title' | 'requirements'>;
+        };
+    };
 
-    const a = data.assignment;
+    let { data }: { data: { assignment: Assignment } } = $props();
 
-    let backendQuality = $state(a.score?.backendQuality ?? 50);
-    let databaseQuality = $state(a.score?.databaseQuality ?? 50);
-    let frontendQuality = $state(a.score?.frontendQuality ?? 50);
-    let functionality = $state(a.score?.functionality ?? 50);
-    let stability = $state(a.score?.stability ?? 50);
-    let usability = $state(a.score?.usability ?? 50);
-    let comment = $state(a.score?.comment ?? '');
+    let backendQuality = $state(data.assignment.score?.backendQuality ?? 50);
+    let databaseQuality = $state(data.assignment.score?.databaseQuality ?? 50);
+    let frontendQuality = $state(data.assignment.score?.frontendQuality ?? 50);
+    let functionality = $state(data.assignment.score?.functionality ?? 50);
+    let stability = $state(data.assignment.score?.stability ?? 50);
+    let usability = $state(data.assignment.score?.usability ?? 50);
+    let comment = $state(data.assignment.score?.comment ?? '');
     let loading = $state(false);
     let success = $state(false);
     let errorMsg = $state('');
@@ -24,49 +29,18 @@
     async function handleSubmit() {
         loading = true;
         errorMsg = '';
-
         const res = await fetch('/api/scores', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                assignmentId: a.id,
-                backendQuality,
-                databaseQuality,
-                frontendQuality,
-                functionality,
-                stability,
-                usability,
-                comment
+                assignmentId: data.assignment.id,
+                backendQuality, databaseQuality, frontendQuality,
+                functionality, stability, usability, comment
             })
         });
-
-        if (res.ok) {
-            success = true;
-        } else {
-            const body = await res.json();
-            errorMsg = body.error ?? 'Помилка збереження';
-        }
-
+        if (res.ok) { success = true; }
+        else { const b = await res.json(); errorMsg = b.error ?? 'Помилка'; }
         loading = false;
-    }
-
-    function setScore(field: string, value: number) {
-        if (field === 'backendQuality') backendQuality = value;
-        else if (field === 'databaseQuality') databaseQuality = value;
-        else if (field === 'frontendQuality') frontendQuality = value;
-        else if (field === 'functionality') functionality = value;
-        else if (field === 'stability') stability = value;
-        else if (field === 'usability') usability = value;
-    }
-
-    function getScore(field: string) {
-        if (field === 'backendQuality') return backendQuality;
-        if (field === 'databaseQuality') return databaseQuality;
-        if (field === 'frontendQuality') return frontendQuality;
-        if (field === 'functionality') return functionality;
-        if (field === 'stability') return stability;
-        if (field === 'usability') return usability;
-        return 0;
     }
 
     const criteria = [
@@ -77,21 +51,38 @@
         { id: 'stability', label: 'Стабільність' },
         { id: 'usability', label: 'Зручність' }
     ];
+
+    function getScore(id: string): number {
+        const map: Record<string, number> = {
+            backendQuality, databaseQuality, frontendQuality,
+            functionality, stability, usability
+        };
+        return map[id] ?? 0;
+    }
+
+    function setScore(id: string, value: number) {
+        if (id === 'backendQuality') backendQuality = value;
+        else if (id === 'databaseQuality') databaseQuality = value;
+        else if (id === 'frontendQuality') frontendQuality = value;
+        else if (id === 'functionality') functionality = value;
+        else if (id === 'stability') stability = value;
+        else if (id === 'usability') usability = value;
+    }
 </script>
 
 <div class="max-w-3xl mx-auto px-4 py-8">
     <a href="/jury" class="text-blue-600 hover:underline text-sm mb-6 block">← Назад</a>
 
     <h1 class="text-2xl font-bold text-gray-900 mb-2">Оцінювання роботи</h1>
-    <p class="text-gray-500 mb-6">{a.submission.team.name}</p>
+    <p class="text-gray-500 mb-6">{data.assignment.submission.team.name}</p>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <h2 class="font-semibold text-gray-900 mb-3">{a.submission.task.title}</h2>
+        <h2 class="font-semibold text-gray-900 mb-3">{data.assignment.submission.task.title}</h2>
         <div class="flex gap-4 text-sm">
-            <a href={a.submission.githubUrl} target="_blank" class="text-blue-600 hover:underline">GitHub →</a>
-            <a href={a.submission.videoUrl} target="_blank" class="text-blue-600 hover:underline">Відео →</a>
-            {#if a.submission.demoUrl}
-                <a href={a.submission.demoUrl} target="_blank" class="text-blue-600 hover:underline">Demo →</a>
+            <a href={data.assignment.submission.githubUrl} target="_blank" class="text-blue-600 hover:underline">GitHub →</a>
+            <a href={data.assignment.submission.videoUrl} target="_blank" class="text-blue-600 hover:underline">Відео →</a>
+            {#if data.assignment.submission.demoUrl}
+                <a href={data.assignment.submission.demoUrl} target="_blank" class="text-blue-600 hover:underline">Demo →</a>
             {/if}
         </div>
     </div>
@@ -136,7 +127,6 @@
                     bind:value={comment}
                     rows="3"
                     class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Необов'язково..."
             ></textarea>
         </div>
 

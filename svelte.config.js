@@ -1,11 +1,22 @@
-import adapter from '@sveltejs/adapter-auto';
+import adapter from '@sveltejs/adapter-static'; // Змінено з adapter-auto
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
     preprocess: vitePreprocess(),
     kit: {
-        adapter: adapter(),
+        // Налаштування для GitHub Pages
+        adapter: adapter({
+            pages: 'build',
+            assets: 'build',
+            fallback: '404.html',
+            precompress: false,
+            strict: true
+        }),
+        paths: {
+            // ВАЖЛИВО: замініть 'education_platform' на точну назву вашого репозиторію
+            base: process.env.NODE_ENV === 'production' ? '/education_platform' : '',
+        },
         alias: {
             $lib: './src/lib',
             '$lib/*': './src/lib/*',
@@ -21,7 +32,6 @@ const config = {
             '$utils/*': './src/lib/utils/*'
         }
     },
-    // Svelte 5: увімкнути runes глобально (опціонально)
     compilerOptions: {
         runes: true
     }

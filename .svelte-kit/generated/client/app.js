@@ -9,19 +9,29 @@ export const nodes = [
 	() => import('./nodes/5'),
 	() => import('./nodes/6'),
 	() => import('./nodes/7'),
-	() => import('./nodes/8')
+	() => import('./nodes/8'),
+	() => import('./nodes/9'),
+	() => import('./nodes/10'),
+	() => import('./nodes/11'),
+	() => import('./nodes/12'),
+	() => import('./nodes/13')
 ];
 
 export const server_loads = [0];
 
 export const dictionary = {
-		"/": [2],
+		"/": [~2],
 		"/admin": [~3],
 		"/auth/login": [4],
 		"/auth/register": [5],
-		"/jury": [~6],
-		"/jury/score/[id]": [8],
-		"/jury/[id]": [~7]
+		"/courses": [6],
+		"/jury": [~7],
+		"/jury/score/[id]": [9],
+		"/jury/[id]": [~8],
+		"/leaderboard": [~10],
+		"/profile": [~11],
+		"/tourments/[id]": [~12],
+		"/tourments/[id]/register": [~13]
 	};
 
 export const hooks = {
